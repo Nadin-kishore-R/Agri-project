@@ -1,0 +1,124 @@
+{
+  "plants": {
+    "Cabbage": {
+      "depth": 40,
+      "fieldCapacity": 30,
+      "soil": "Loamy",
+      "threshold": 650,
+      "wiltingPoint": 12
+    },
+    "Carrot": {
+      "depth": 45,
+      "fieldCapacity": 25,
+      "soil": "Sandy Loam",
+      "threshold": 680,
+      "wiltingPoint": 10
+    },
+    "Groundnut": {
+      "depth": 45,
+      "fieldCapacity": 20,
+      "soil": "Sandy",
+      "threshold": 700,
+      "wiltingPoint": 8
+    },
+    "Maize": {
+      "depth": 120,
+      "fieldCapacity": 25,
+      "soil": "Sandy Loam",
+      "threshold": 680,
+      "wiltingPoint": 10
+    },
+    "Napier Grass": {
+      "depth": 150,
+      "fieldCapacity": 40,
+      "soil": "Clay",
+      "threshold": 600,
+      "wiltingPoint": 20
+    },
+    "Onion": {
+      "depth": 30,
+      "fieldCapacity": 25,
+      "soil": "Sandy Loam",
+      "threshold": 680,
+      "wiltingPoint": 10
+    },
+    "Potato": {
+      "depth": 40,
+      "fieldCapacity": 25,
+      "soil": "Sandy Loam",
+      "threshold": 680,
+      "wiltingPoint": 10
+    },
+    "Sunflower": {
+      "depth": 120,
+      "fieldCapacity": 30,
+      "soil": "Loamy",
+      "threshold": 650,
+      "wiltingPoint": 12
+    },
+    "Tomato": {
+      "depth": 50,
+      "fieldCapacity": 30,
+      "soil": "Loamy",
+      "threshold": 650,
+      "wiltingPoint": 12
+    },
+    "Wheat": {
+      "depth": 80,
+      "fieldCapacity": 30,
+      "soil": "Loamy",
+      "threshold": 650,
+      "wiltingPoint": 12
+    }
+  },
+  "users": {
+    "YOUR_USER_UID_HERE": {
+      "profile": {
+        "username": "Farmer John"
+      },
+      "config": {
+        "fieldCapacity": 40,
+        "mode": "auto",
+        "motor": "OFF",
+        "plant": "Napier Grass",
+        "rootDepth": 150,
+        "soil": "Clay",
+        "thresholdMoisture": 600,
+        "wiltingPoint": 20,
+        "windRate": 0
+      },
+      "registered_sprinklers": {
+        "Sprinkler-1": true,
+        "Sprinkler-2": true
+      },
+      "sprinklers": {
+        "Sprinkler-1": {
+          "flow": 12.5,
+          "ip": "192.168.1.100",
+          "message": "System Ready",
+          "moisture": 620,
+          "time": 5.2
+        }
+      },
+      "history": {
+        "random_push_id_1": {
+          "timestamp": 1684321234567,
+          "sprinklerId": "Sprinkler-1",
+          "status": "Completed: Soil Wet",
+          "moisture": 490,
+          "flow": 12.5,
+          "time": 5.2
+        },
+        "random_push_id_2": {
+          "timestamp": 1684321245678,
+          "sprinklerId": "Sprinkler-1",
+          "status": "Halted: Clog Not Rectified",
+          "moisture": 600,
+          "flow": 0.1,
+          "time": 1.2
+        }
+      }
+    }
+  }
+}
+// these are the default values for the plants and users in the Firebase database. The "plants" section contains information about different types of plants, including their depth, field capacity, soil type, threshold moisture level, and wilting point. The "users" section contains user-specific data, including profile information, configuration settings for irrigation, registered sprinklers, and historical data of sprinkler operations.

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation System</title>
+    <link rel="stylesheet" href="styles.css?v=9">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+
+<body>
+
+    <!-- AUTHENTICATION -->
+    <div id="authContainer" class="glass-panel">
+        <h1>Smart Irrigation</h1>
+        <p>Sign in to manage your system</p>
+        <div class="input-group">
+            <input id="username" type="text" placeholder="Username (Signup Only)">
+            <input id="email" type="email" placeholder="Email Address">
+            <input id="password" type="password" placeholder="Password">
+        </div>
+        <div class="btn-group">
+            <button id="loginBtn" class="primary-btn">Login</button>
+            <button id="signupBtn" class="secondary-btn">Sign Up</button>
+        </div>
+        <p id="authError" class="error-msg"></p>
+    </div>
+
+    <!-- ONBOARDING MODAL -->
+    <div id="onboardingModal" class="modal-overlay hidden">
+        <div class="glass-panel modal-content">
+            <h2>Welcome to Smart Irrigation!</h2>
+            <p>How many sprinklers are you installing today?</p>
+            <input id="sprinklerCount" type="number" min="1" value="1" style="margin: 15px 0; width: 100%;">
+            <button id="completeOnboardingBtn" class="primary-btn">Generate IDs</button>
+            <div id="generatedIdsContainer" class="hidden" style="margin-top: 15px; text-align: left;">
+                <p>Use these exact IDs in your ESP code:</p>
+                <ul id="generatedIdsList" style="color: var(--accent); font-weight: bold; padding-left: 20px;"></ul>
+                <button id="closeOnboardingBtn" class="secondary-btn" style="margin-top: 15px; width: 100%;">Go to
+                    Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="dashboard-container" style="display: none;">
+        <header class="glass-panel header">
+            <h2> Smart Irrigation Dashboard</h2>
+            <div class="user-info" style="position: relative; display: flex; align-items: center; gap: 15px;">
+                <div id="profileIconToggle" class="profile-icon">
+                    <span id="profileInitials">U</span>
+                </div>
+                <span id="userEmailDisplay" style="display: none;"></span>
+                <button id="logoutBtn" class="danger-btn" style="padding: 8px 16px;">Logout</button>
+
+                <!-- Slide Down Profile Popup -->
+                <div id="profilePopup" class="profile-popup hidden">
+                    <div class="profile-details">
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label>Username:</label>
+                            <strong id="profileUsername">--</strong>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label>Email:</label>
+                            <strong id="profileEmail" style="word-break: break-all; font-size: 13px;">--</strong>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label>Sprinklers Installed:</label>
+                            <strong id="profileSprinklerCount">0</strong>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label>Password:</label>
+                            <strong style="letter-spacing: 2px;">••••••••</strong>
+                        </div>
+                        <div style="border-top: 1px solid var(--glass-border); margin: 15px 0; padding-top: 10px;">
+                            <label style="font-size: 13px; font-weight: 600; color: var(--accent);">TELEGRAM
+                                ALERTS</label>
+                            <div class="form-group" style="margin-top: 8px;">
+                                <input id="tgTokenInput" type="text" placeholder="Bot Token"
+                                    style="font-size: 13px; padding: 8px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <input id="tgChatIdInput" type="text" placeholder="Chat ID"
+                                    style="font-size: 13px; padding: 8px;">
+                            </div>
+                            <button id="saveTgBtn" class="primary-btn"
+                                style="width: 100%; padding: 8px; font-size: 13px;">Save Alerts Config</button>
+                        </div>
+                        <button id="addSprinklerBtn" class="secondary-btn" style="width: 100%;">+ Add Sprinkler</button>
+                        <p id="newSprinklerMsg"
+                            style="color: var(--success); margin-top: 10px; font-weight: bold; text-align: center; font-size: 12px;">
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- SYSTEM MESSAGE -->
+        <div id="systemMessageBanner" class="glass-panel message-banner">
+            <h3 style="margin-bottom: 5px; color: var(--text-muted); font-size: 14px;">SYSTEM MESSAGE</h3>
+            <p id="globalMessageText" style="font-size: 18px; font-weight: bold; margin: 0;">Loading...</p>
+        </div>
+
+        <div class="grid-layout">
+
+            <!-- CONTROL PANEL -->
+            <div class="glass-panel">
+                <h3>CONTROL PANEL</h3>
+                <div class="control-row">
+                    <span>Mode:</span>
+                    <div class="btn-group">
+                        <button id="autoBtn" class="toggle-btn active">AUTO</button>
+                        <button id="manualBtn" class="toggle-btn">MANUAL</button>
+                    </div>
+                </div>
+
+                <div id="manualControls" class="control-row hidden">
+                    <span>Motor:</span>
+                    <div class="btn-group">
+                        <button id="motorOnBtn" class="danger-btn">ON</button>
+                        <button id="motorOffBtn" class="secondary-btn">OFF</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Wind Direction:</label>
+                    <input id="windDirection" type="text" placeholder="e.g., Even, North, etc.">
+                </div>
+
+                <div class="form-group"
+                    style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border);">
+                    <label>System Motor Status:</label>
+                    <strong id="liveMotorStateUI" style="font-size: 1.2rem; color: var(--danger);">OFF</strong>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 15px;">
+                    <div class="stat-item">
+                        <span>LINKED Sprinklers</span>
+                        <strong id="connectedCountUI">0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Average Irrigation Time</span>
+                        <strong id="avgTimeUI">0 min</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLANT CONFIGURATION -->
+            <div class="glass-panel config-panel">
+                <h3>PLANT CONFIGURATION</h3>
+                <div class="form-group">
+                    <label>Select Plant:</label>
+                    <select id="plantSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label>Soil Type:</label>
+                    <select id="soilSelect">
+                        <option value="Loamy">Loamy</option>
+                        <option value="Sandy">Sandy</option>
+                        <option value="Clay">Clay</option>
+                        <option value="Sandy Loam">Sandy Loam</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Threshold Moisture:</label>
+                    <input id="thresholdInput" type="number">
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span>Root Depth (cm)</span>
+                        <strong id="depthUI">--</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Field Capacity</span>
+                        <strong id="fcUI">--</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Wilting Point</span>
+                        <strong id="wpUI">--</strong>
+                    </div>
+                </div>
+                <button id="saveConfigBtn" class="primary-btn" style="margin-top: 15px; width: 100%;">Save
+                    Configuration</button>
+            </div>
+
+            <!-- LIVE SYSTEM SUMMARY -->
+            <div class="glass-panel">
+                <h3>LIVE SYSTEM SUMMARY</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span>Average Moisture</span>
+                        <strong id="avgMoistureUI">0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Average Flow (L/m)</span>
+                        <strong id="avgFlowUI">0.0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Total Irrigation Time</span>
+                        <strong id="totalTimeUI">0 min</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Water Usage</span>
+                        <strong id="waterUsageUI" style="color: var(--accent);">0 L</strong>
+                    </div>
+                    <div class="stat-item" style="grid-column: span 2;">
+                        <span>System Health</span>
+                        <strong id="systemHealthUI" style="font-size: 24px;">GOOD</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTA / DEVICE STATUS -->
+            <div class="glass-panel">
+                <h3>OTA / DEVICE STATUS</h3>
+                <div class="form-group">
+                    <label>Select Sprinkler:</label>
+                    <select id="otaSprinklerSelect">
+                        <option value="">-- None --</option>
+                    </select>
+                </div>
+                <div class="stats-grid" style="margin-top: 15px;">
+                    <div class="stat-item">
+                        <span>ESP Status</span>
+                        <strong id="otaStatusUI">--</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>IP Address</span>
+                        <strong id="otaIpUI">--</strong>
+                    </div>
+                    <div class="stat-item" style="grid-column: span 2;">
+                        <span>Firmware</span>
+                        <strong>v1.0</strong>
+                    </div>
+                </div>
+                <a id="otaUpdateBtn" href="#" target="_blank" class="secondary-btn"
+                    style="display: block; text-align: center; margin-top: 15px; text-decoration: none; padding: 10px; pointer-events: none; opacity: 0.5;">OTA
+                    UPDATE</a>
+            </div>
+
+            <!-- INDIVIDUAL SPRINKLER CARDS -->
+            <div class="glass-panel sprinklers-panel span-2">
+                <h3>SPRINKLER CARDS</h3>
+                <div id="sprinklerList" class="sprinkler-grid">
+                    <p class="empty-state">No sprinklers currently connected.</p>
+                </div>
+            </div>
+
+
+
+            <!-- PREVIOUS RECORDS -->
+            <div class="glass-panel history-panel span-2">
+                <h3>PREVIOUS RECORDS</h3>
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Sprinkler ID</th>
+                                <th>Status</th>
+                                <th>Moisture</th>
+                                <th>Flow (L/m)</th>
+                                <th>Time (min)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyList">
+                            <tr>
+                                <td colspan="6" class="empty-state">No records yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=12"></script>
+</body>
+
+</html>
